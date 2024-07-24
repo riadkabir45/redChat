@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="{% static 'css/main.css' %}" />
+		<title>redChat</title>
+	</head>
+	<body>
+		<div class="m-container">
+			<div class="t-container">
+				<h3>Chatbox</h3>
+			</div>
+			{% if msgs %}
+			<p style="color:green;">{{msgs}}</p>
+			{% endif %}
+			{% if msgf %}
+			<p style="color:red;">{{msgf}}</p>
+			{% endif %}
+			<div class="f-container">
+				<form action="" style="display: flex;" method="POST">
+					{% csrf_token %}
+					<input type="text" name="msgtxt" required/>
+					<input type="submit">
+				</form>
+				<br/>
+				<dev class="c-container">
+				<p id="cbox">
+				</p>
+			</div>
+		</div>
+		</div>
+		<script>
+			/*
+			function pollData() {
+				fetch('/your_api_endpoint/')
+					.then(response => response.json())
+					.then(data => {
+						// Update the DOM with the new data
+						document.getElementById('data-container').innerHTML = data.html;
+					});
+			}
+				{% for chat in ctable %}
+				{% if user == chat.user %}
+				<b>{{chat.user.username}}:</b> {{chat.msg}}<br/>
+				{% else %}
+				{{chat.user.username}}: {{chat.msg}}<br/>
+				{% endif %}
+				{% endfor %}
+
+			setInterval(pollData, 5000); // Poll every 5 seconds
+			*/
+			function pollData(){
+			fetch("/gchat")
+				.then(res => res.json())
+				.then(data => {
+					var restr = "";
+					for(var i=0;i<data["user"].length;i++){
+						if(data["root"] == data["user"][i])
+							restr += "<b>"+data["user"][i]+"</b>: "+data["mesg"][i]+"<br/>"
+						else
+							restr += data["user"][i]+": "+data["mesg"][i]+"<br/>"
+					}
+					const cbox = document.getElementById('cbox');
+					cbox.innerHTML = restr;
+				});
+			}
+
+			pollData();
+			setInterval(pollData,1000);
+		</script>
+	</body>
+</html>

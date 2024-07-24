@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="{% static 'css/main.css' %}" />
+		<title>redChat</title>
+	</head>
+	<body>
+		<div class="m-container">
+			<div class="t-container">
+				<h3>Sign Up</h3>
+			</div>
+			{% if msgs %}
+			<p style="color:green;">{{msgs}}</p>
+			{% endif %}
+			{% if msgf %}
+			<p style="color:red;">{{msgf}}</p>
+			{% endif %}
+			<div class="f-container">
+				<form action="" method="POST">
+					{% csrf_token %}
+					<label for="username">Username</label>
+					<input type="text" name="username" value="{{username}}" required/><p/>
+					<label for="passowrd">Password</label>
+					<input type="password" name="password" required/><p/>
+					<label for="cpassowrd">Confrim Password</label>
+					<input type="password" name="cpassword" required/><p/>
+					<input type="submit">
+				</form>
+				<p><a href="/signin" >SignIn</a> if you alreay have an account.</p>
+			</div>
+		</div>
+	</body>
+</html>

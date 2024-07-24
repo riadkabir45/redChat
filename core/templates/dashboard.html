@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="{% static 'css/main.css' %}" />
+		<title>redChat</title>
+	</head>
+	<body>
+		<div class="m-container">
+			<div class="t-container">
+				<h3>Hello</h3>
+			</div>
+			<div class="f-container">
+				<p>
+				Welcome to redChat,<b>{{userid}}</b>!!
+				Please continue to global <a href="/chat">chat</a>
+				</p>
+			</div>
+		</div>
+	</body>
+</html>
