@@ -11,7 +11,7 @@
 		{% include "navbar.html" %}
 		<div class="m-container">
 			<div class="t-container">
-				<h3>Sign In</h3>
+				<h3>Chat Name</h3>
 			</div>
 			{% if msgs %}
 			<p style="color:green;">{{msgs}}</p>
@@ -24,11 +24,9 @@
 					{% csrf_token %}
 					<label for="username">Username</label>
 					<input type="text" name="username" value="{{username}}" required/><p/>
-					<label for="passowrd">Password</label>
-					<input type="password" name="password" required/><p/>
 					<input type="submit">
 				</form>
-				<p><a href="/signup" >SignUP</a> if you dont have an account.</p>
+				<p>Access global <a href="/chat" >chat</a> if you dont know anyone.</p>
 			</div>
 		</div>
 	</body>

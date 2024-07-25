@@ -8,9 +8,14 @@
 		<title>redChat</title>
 	</head>
 	<body>
+		{% include "navbar.html" %}
 		<div class="m-container">
 			<div class="t-container">
+				{% if target %}
+				<h3>Chatbox @ {{target}}</h3>
+				{% else %}
 				<h3>Chatbox</h3>
+				{% endif %}
 			</div>
 			{% if msgs %}
 			<p style="color:green;">{{msgs}}</p>
@@ -52,7 +57,7 @@
 			setInterval(pollData, 5000); // Poll every 5 seconds
 			*/
 			function pollData(){
-			fetch("/gchat")
+				fetch("/gchat/{{target}}")
 				.then(res => res.json())
 				.then(data => {
 					var restr = "";

@@ -20,11 +20,18 @@ class CustomUser(AbstractBaseUser,PermissionsMixin,models.Model):
     def __str__(self):
         return self.username
 
+class ChatLink(models.Model):
+    user1 = models.ForeignKey(CustomUser, on_delete=models.CASCADE,related_name="src")
+    user2 = models.ForeignKey(CustomUser, on_delete=models.CASCADE,related_name="dest")
+
+    def __str__(self):
+        return f"{self.user2.username}->{self.user1.username}"
+
 class ChatTable(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     msg = models.CharField(max_length = 200)
     timestamp = models.DateField(default = dt.now)
-
+    link = models.ForeignKey(ChatLink, on_delete=models.CASCADE,null=True)
 
     def __str__(self):
         return f"{self.user.username}->{self.msg}@{self.timestamp}"
