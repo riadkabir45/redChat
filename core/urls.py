@@ -24,10 +24,8 @@ urlpatterns = [
     path("signup/", views.signup,name='signup'),
     path("signin/", views.signin,name='signin'),
     path("dashboard/", views.dashboard,name='dashboard'),
-    path("chat/", views.chat,name='chat'),
     path("chat/<str:target>", views.chatTarget,name='chatTarget'),
-    path("gchat/", views.gchat,name='gchat'),
-    path("gchat/<str:target>/", views.gchatTarget,name='gchatTarget'),
+    path("chat/", views.chat,name='chat'),
     path("target/", views.target,name='target'),
     path("logout/", views.logout,name='logout'),
 ]

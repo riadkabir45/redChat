@@ -9,6 +9,53 @@
 	</head>
 	<body>
 		{% include "navbar.html" %}
+		<script>
+			const cs = new WebSocket('ws://'+window.location.host+'/ws/chat/global/');
+			var interv = null;
+
+			function preLoad()
+			{
+				cs.send(JSON.stringify({
+					"type":"refresh",
+					"user": "{{user}}",
+					"target": "{{target}}",
+				}));
+			};
+
+			cs.onopen = preLoad
+			//interv = setInterval(preLoad,100);
+
+			cs.onmessage = function(e)
+			{
+				const data = JSON.parse(e.data);
+				if(data["size"] == 0)
+					return;
+				var restr = "";
+				for(var i=0;i<data["user"].length;i++){
+					if(data["root"] == data["user"][i])
+						restr += "<b>"+data["user"][i]+"</b>: "+data["mesg"][i]+"<br/>"
+					else
+						restr += data["user"][i]+": "+data["mesg"][i]+"<br/>"
+				}
+				const cbox = document.getElementById('cbox');
+				cbox.innerHTML = restr;
+			};
+
+
+
+			function sendMsg()
+			{
+				const ibox = document.getElementById('iBox');
+				cs.send(JSON.stringify({
+					"type":"msg",
+					"message":ibox.value,
+					"user": "{{user}}",
+					"target": "{{target}}",
+				}));
+			};
+
+
+		</script>
 		<div class="m-container">
 			<div class="t-container">
 				{% if target %}
@@ -24,11 +71,10 @@
 			<p style="color:red;">{{msgf}}</p>
 			{% endif %}
 			<div class="f-container">
-				<form action="" style="display: flex;" method="POST">
-					{% csrf_token %}
-					<input type="text" name="msgtxt" required/>
-					<input type="submit">
-				</form>
+				<div style="display: flex;">
+					<input type="text" id="iBox" name="msgtxt" required/>
+					<input type="button" id="submit" value="Send" onclick="sendMsg()"/>
+				</div>
 				<br/>
 				<dev class="c-container">
 				<p id="cbox">
@@ -37,6 +83,16 @@
 		</div>
 		</div>
 		<script>
+			const inp = document.querySelector('#iBox');
+			const sub = document.querySelector('#submit');
+			inp.focus();
+			inp.onkeyup = function(e)
+			{
+				if(e.key === "Enter"){
+					sub.click();
+					inp.value = "";
+				}
+			};
 			/*
 			function pollData() {
 				fetch('/your_api_endpoint/')
@@ -72,8 +128,8 @@
 				});
 			}
 
-			pollData();
-			setInterval(pollData,1000);
+			//pollData();
+			//setInterval(pollData,1000);
 		</script>
 	</body>
 </html>
