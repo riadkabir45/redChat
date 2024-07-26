@@ -10,3 +10,19 @@
 		<a href="{% url 'logout' %}">Logout</a>
 	{% endif %}
 </div>
+<script>
+const topNav = document.querySelector('.topnav');
+const links = topNav.querySelectorAll('a');
+const currentPath = window.location.pathname;
+
+links.forEach(link => {
+  const href = link.getAttribute('href');
+  // Do something with the href value
+
+  // Check for additional class based on href value
+  if (href === currentPath) {
+    link.classList.add('active'); // Or any other class you want to add
+  }
+});
+
+</script>
