@@ -59,7 +59,7 @@
 			const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
 			function pollData(){
-				fetch("/gchat/{{target}}")
+				fetch("{% url 'gchat' %}{{target}}")
 					.then(res => res.json())
 					.then(data => {
 						var restr = "";
@@ -81,7 +81,7 @@
 						"user="+"{{request.user.username}}"+"&"+
 						"target="+"{{target}}";
 				if(inp.value != "")
-					fetch("/post/",{
+					fetch("{% url 'post' %}",{
 						"method":"POST",
 						headers: {
 							'Content-Type': 'application/x-www-form-urlencoded',

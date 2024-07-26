@@ -31,14 +31,14 @@ def post(req):
 
 def index(req):
     req.session['nav'] = {
-                "Home": "/dashboard/",
-                "Global Chat": "/chat/",
-                "Local Chat": "/target/",
+                "Home": "dashboard",
+                "Global Chat": "chat",
+                "Local Chat": "target",
             }
     req.session['pre_nav'] = {
-            "Home": "/",
-            "Signup": "/signup/",
-            "Signin": "/signin/",
+            "Home": "index",
+            "Signup": "signup",
+            "Signin": "signin",
         }
     if req.user.id is not None:
         return redirect(dashboard)

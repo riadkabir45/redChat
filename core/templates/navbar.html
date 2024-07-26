@@ -1,20 +1,12 @@
 <div class="topnav">
 	{% if request.user.id is None %}
-		{% for key,value in request.session.pre_nav.items %}
-		{% if value == request.path %}
-		<a class="active" href="{{value}}">{{key}}</a>
-		{% else %}
-		<a href="{{value}}">{{key}}</a>
-		{% endif %}
-		{% endfor %}
+		<a href="{% url 'index' %}">Home</a>
+		<a href="{% url 'signup' %}">Sign Up</a>
+		<a href="{% url 'signin' %}">Sign In</a>
 	{% else %}
-		{% for key,value in request.session.nav.items %}
-		{% if value == request.path %}
-		<a class="active" href="{{value}}">{{key}}</a>
-		{% else %}
-		<a href="{{value}}">{{key}}</a>
-		{% endif %}
-		{% endfor %}
-		<a href="/logout">Logout</a>
+		<a href="{% url 'dashboard' %}">Home</a>
+		<a href="{% url 'chat' %}">Global Chat</a>
+		<a href="{% url 'target' %}">Local Chat</a>
+		<a href="{% url 'logout' %}">Logout</a>
 	{% endif %}
 </div>
