@@ -4,6 +4,31 @@ from .models import CustomUser, ChatTable, ChatLink
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse as JR
 
+def post(req): 
+    print(req.method)
+    if req.method == "POST":
+        msg = req.POST.get("msgtxt")
+        target = req.POST.get("target")
+        if target != "":
+            targetUser = CustomUser.objects.get(username=target)
+            if ChatLink.objects.filter(user1=req.user,user2=targetUser).exists():
+                link = ChatLink.objects.get(user1=req.user,user2=targetUser)
+            elif ChatLink.objects.filter(user2=req.user,user1=targetUser).exists():
+                link = ChatLink.objects.get(user2=req.user,user1=targetUser)
+            else:
+                nlink = ChatLink.objects.create(user2=req.user,user1=targetUser)
+                nlink.save()
+                link = ChatLink.objects.get(user2=req.user,user1=targetUser)
+
+            utxt = msg
+            ntext = ChatTable.objects.create(user=req.user,msg=utxt,link=link)
+            ntext.save()
+        else:
+            utxt = msg
+            ntext = ChatTable.objects.create(user=req.user,msg=utxt)
+            ntext.save()
+    return JR({})
+
 def index(req):
     req.session['nav'] = {
                 "Home": "/dashboard/",

@@ -24,17 +24,16 @@
 			<p style="color:red;">{{msgf}}</p>
 			{% endif %}
 			<div class="f-container">
-				<form action="" style="display: flex;" method="POST">
+				<div style="display: flex;">
 					{% csrf_token %}
-					<input type="text" name="msgtxt" required/>
-					<input type="submit">
-				</form>
+					<input type="text" id="inp" name="msgtxt" required/>
+					<input type="button" value="Enter" onclick="req()">
+				</div>
 				<br/>
 				<dev class="c-container">
 				<p id="cbox">
 				</p>
 			</div>
-		</div>
 		</div>
 		<script>
 			/*
@@ -55,22 +54,50 @@
 				{% endfor %}
 
 			setInterval(pollData, 5000); // Poll every 5 seconds
-			*/
+			 */
+			const inp = document.querySelector("#inp");
+			const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
 			function pollData(){
 				fetch("/gchat/{{target}}")
-				.then(res => res.json())
-				.then(data => {
-					var restr = "";
-					for(var i=0;i<data["user"].length;i++){
-						if(data["root"] == data["user"][i])
-							restr += "<b>"+data["user"][i]+"</b>: "+data["mesg"][i]+"<br/>"
-						else
-							restr += data["user"][i]+": "+data["mesg"][i]+"<br/>"
-					}
-					const cbox = document.getElementById('cbox');
-					cbox.innerHTML = restr;
-				});
+					.then(res => res.json())
+					.then(data => {
+						var restr = "";
+						for(var i=0;i<data["user"].length;i++){
+							if(data["root"] == data["user"][i])
+								restr += "<b>"+data["user"][i]+"</b>: "+data["mesg"][i]+"<br/>"
+							else
+								restr += data["user"][i]+": "+data["mesg"][i]+"<br/>"
+						}
+						const cbox = document.getElementById('cbox');
+						cbox.innerHTML = restr;
+					});
 			}
+
+			function req(){
+				console.log("En");
+				data = "csrfmiddlewaretoken="+csrfToken+"&"+
+						"msgtxt="+inp.value+"&"+
+						"user="+"{{request.user.username}}"+"&"+
+						"target="+"{{target}}";
+				if(inp.value != "")
+					fetch("/post/",{
+						"method":"POST",
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							'X-CSRFToken': csrfToken,
+						},
+						body: data,
+					}).then(pollData);
+			};
+
+			inp.onkeyup = function(e)
+			{
+				if(e.key === "Enter"){
+					req();
+				}
+			};
+
 
 			pollData();
 			setInterval(pollData,1000);

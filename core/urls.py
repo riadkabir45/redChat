@@ -30,4 +30,5 @@ urlpatterns = [
     path("gchat/<str:target>/", views.gchatTarget,name='gchatTarget'),
     path("target/", views.target,name='target'),
     path("logout/", views.logout,name='logout'),
+    path("post/", views.post,name='post'),
 ]
