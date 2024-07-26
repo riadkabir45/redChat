@@ -57,10 +57,25 @@
 			 */
 			const inp = document.querySelector("#inp");
 			const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+			var inwork = false;
 
-			function pollData(){
-				fetch("{% url 'gchat' %}{{target}}")
-					.then(res => res.json())
+			function pollData(poll=true){
+				if(inwork)
+					return;
+				inwork = true;
+				if(poll)
+					url = "{% url 'pchat' %}{{target}}";
+				else
+					url = "{% url 'gchat' %}{{target}}";
+				console.log("En",url);
+				fetch(url)
+				.then(response => {
+					  if (response.ok) {
+						return response.json();
+					  } else {
+						throw new Error('Network response was not ok');
+					  }
+					})
 					.then(data => {
 						var restr = "";
 						for(var i=0;i<data["user"].length;i++){
@@ -71,17 +86,17 @@
 						}
 						const cbox = document.getElementById('cbox');
 						cbox.innerHTML = restr;
+						inwork = false;
 					});
 			}
 
 			function req(){
-				console.log("En");
 				data = "csrfmiddlewaretoken="+csrfToken+"&"+
 						"msgtxt="+inp.value+"&"+
 						"user="+"{{request.user.username}}"+"&"+
 						"target="+"{{target}}";
 				if(inp.value != "")
-					fetch("{% url 'post' %}",{
+					fetch("{% url 'chat' %}",{
 						"method":"POST",
 						headers: {
 							'Content-Type': 'application/x-www-form-urlencoded',
@@ -89,6 +104,7 @@
 						},
 						body: data,
 					}).then(pollData);
+				inp.value = "";
 			};
 
 			inp.onkeyup = function(e)
@@ -99,8 +115,8 @@
 			};
 
 
-			pollData();
-			setInterval(pollData,1000);
+			pollData(false);
+			setInterval(pollData,100);
 		</script>
 	</body>
 </html>
