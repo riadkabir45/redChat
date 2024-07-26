@@ -77,6 +77,7 @@
 					  }
 					})
 					.then(data => {
+						console.log(data);
 						var restr = "";
 						for(var i=0;i<data["user"].length;i++){
 							if(data["root"] == data["user"][i])

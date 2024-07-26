@@ -24,7 +24,11 @@ def logout(req):
 @login_required(login_url='signin')
 def gchat(req,target=""):
     oldData = req.session.get("oldData")
-    viewer = req.path.split("/")[-2]
+    res = {}
+    res["user"] = []
+    res["mesg"] = []
+    res["root"] = req.user.username
+    viewer = req.path.split("/")[1:]
     if not CustomUser.objects.filter(username=target).exists() and target != "":
         return redirect(dashboard)
     while True:
@@ -41,17 +45,11 @@ def gchat(req,target=""):
             ctable = ChatTable.objects.filter(link=link)
         else:
             ctable = ChatTable.objects.filter(link__isnull=True)
-        if not ctable.exists():
-            return JR({})
         ltable = str([elem.id for elem in ctable])
-        if ltable != oldData or viewer != "pchat":
+        if ltable != oldData or (viewer[-2] != "pchat" and target == "") or (viewer[-3] != "pchat" and target != ""):
             break
         time.sleep(0.5)
     req.session["oldData"] = ltable
-    res = {}
-    res["user"] = []
-    res["mesg"] = []
-    res["root"] = req.user.username
     for elem in ctable:
         res["user"].append(elem.user.username)
         res["mesg"].append(elem.msg)
