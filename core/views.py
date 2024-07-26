@@ -10,6 +10,11 @@ def index(req):
                 "Global Chat": "/chat/",
                 "Local Chat": "/target/",
             }
+    req.session['pre_nav'] = {
+            "Home": "/",
+            "Signup": "/signup/",
+            "Signin": "/signin/",
+        }
     if req.user.id is not None:
         return redirect(dashboard)
     return render(req,"index.html")
