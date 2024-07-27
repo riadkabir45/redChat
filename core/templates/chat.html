@@ -5,6 +5,7 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="stylesheet" href="{% static 'css/main.css' %}" />
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 		<title>redChat</title>
 	</head>
 	<body>
@@ -36,6 +37,16 @@
 			</div>
 		</div>
 		<script>
+			const crpt = CryptoJS.AES;
+			const ekey = "{{request.session.ekey}}";
+			function emsg(msg){
+				return crpt.encrypt(msg, ekey).toString()
+			};
+			function dmsg(msg){
+				const bytes = crpt.decrypt(msg, ekey);
+				const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+				return decryptedData;
+			};
 			/*
 			function pollData() {
 				fetch('/your_api_endpoint/')
@@ -55,47 +66,48 @@
 
 			setInterval(pollData, 5000); // Poll every 5 seconds
 			 */
-			const inp = document.querySelector("#inp");
-			const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-			var inwork = false;
+						const inp = document.querySelector("#inp");
+						const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+						var inwork = false;
 
-			function pollData(poll=true){
-				if(inwork)
-					return;
-				inwork = true;
-				if(poll)
-					url = "{% url 'pchat' %}{{target}}";
-				else
-					url = "{% url 'gchat' %}{{target}}";
-				console.log("En",url);
-				fetch(url)
-				.then(response => {
-					  if (response.ok) {
-						return response.json();
-					  } else {
-						throw new Error('Network response was not ok');
-					  }
-					})
-					.then(data => {
-						console.log(data);
-						var restr = "";
-						for(var i=0;i<data["user"].length;i++){
-							if(data["root"] == data["user"][i])
-								restr += "<b>"+data["user"][i]+"</b>: "+data["mesg"][i]+"<br/>"
+						function pollData(poll=true){
+							if(inwork)
+								return;
+							inwork = true;
+							if(poll)
+								url = "{% url 'pchat' %}{{target}}";
 							else
-								restr += data["user"][i]+": "+data["mesg"][i]+"<br/>"
+								url = "{% url 'gchat' %}{{target}}";
+							console.log("En",url);
+							fetch(url)
+								.then(response => {
+									if (response.ok) {
+										return response.json();
+									} else {
+										throw new Error('Network response was not ok');
+										inwork = false;
+									}
+								})
+								.then(data => {
+									console.log(data);
+									var restr = "";
+									for(var i=0;i<data["user"].length;i++){
+										if(data["root"] == data["user"][i])
+											restr += "<b>"+data["user"][i]+"</b>: "+dmsg(data["mesg"][i])+"<br/>"
+										else
+											restr += data["user"][i]+": "+dmsg(data["mesg"][i])+"<br/>"
+									}
+									const cbox = document.getElementById('cbox');
+									cbox.innerHTML = restr;
+									inwork = false;
+								});
 						}
-						const cbox = document.getElementById('cbox');
-						cbox.innerHTML = restr;
-						inwork = false;
-					});
-			}
 
 			function req(){
 				data = "csrfmiddlewaretoken="+csrfToken+"&"+
-						"msgtxt="+inp.value+"&"+
-						"user="+"{{request.user.username}}"+"&"+
-						"target="+"{{target}}";
+					"msgtxt="+emsg(inp.value)+"&"+
+					"user="+"{{request.user.username}}"+"&"+
+					"target="+"{{target}}";
 				if(inp.value != "")
 					fetch("{% url 'chat' %}",{
 						"method":"POST",

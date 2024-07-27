@@ -4,7 +4,10 @@ from .models import CustomUser, ChatTable, ChatLink
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse as JR
 from django.db.models.signals import post_save
+from django.db.models import Q
 from django.dispatch import receiver
+from django.contrib.auth.hashers import make_password, check_password
+from hashlib import sha256
 import time
 
 
@@ -61,8 +64,8 @@ def gchat(req,target=""):
 @login_required(login_url='signin')
 def chat(req,target=""):
     if req.method == "POST":
-        print("new respone used")
         msg = req.POST.get("msgtxt")
+        print(msg)
         target = req.POST.get("target")
         if msg == None or target == None:
             return HttpResponse(status=204)
@@ -130,8 +133,23 @@ def target(req):
     if req.method == "POST":
         pdata = req.POST
         uname = pdata["username"]
+        upass = pdata["password"]
         redata = {"username": uname}
         if CustomUser.objects.filter(username=uname).exists():
+            target =  CustomUser.objects.get(username=uname)
+            query = Q(user1=req.user,user2=target) | Q(user2=req.user,user1=target)
+            if not ChatLink.objects.filter(query).exists():
+                nlink = ChatLink.objects.create(user2=req.user,user1=targetUser)
+                nlink.save()
+            link = ChatLink.objects.get(query)
+            if link.password is None:
+                link.password = make_password(upass)
+                link.save()
+            else:
+                if not check_password(upass,link.password):
+                    redata['msgf'] = "Invalid credintials"
+                    return render(req,"target.html",redata)
+            req.session["ekey"] = sha256(upass.encode()).hexdigest()
             return redirect(chat,uname)
         redata['msgf'] = "User not found"
         return render(req,"target.html",redata)

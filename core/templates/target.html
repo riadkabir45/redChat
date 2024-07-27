@@ -24,6 +24,8 @@
 					{% csrf_token %}
 					<label for="username">Username</label>
 					<input type="text" name="username" value="{{username}}" required/><p/>
+					<label for="password">Password</label>
+					<input type="password" name="password" required/><p/>
 					<input type="submit">
 				</form>
 				<p>Access global <a href="{% url 'gchat' %}" >chat</a> if you dont know anyone.</p>
