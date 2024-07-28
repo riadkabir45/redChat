@@ -6,6 +6,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="stylesheet" href="{% static 'css/main.css' %}" />
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 		<title>redChat</title>
 	</head>
 	<body>
@@ -28,7 +29,7 @@
 				<div style="display: flex;">
 					{% csrf_token %}
 					<input type="text" id="inp" name="msgtxt" required/>
-					<input type="button" value="Enter" onclick="req()">
+					<input type="button" value="Enter" onclick="postMsg()">
 				</div>
 				<br/>
 				<dev class="c-container">
@@ -40,96 +41,114 @@
 			const crpt = CryptoJS.AES;
 			const ekey = "{{request.session.ekey}}";
 			function emsg(msg){
-				return crpt.encrypt(msg, ekey).toString()
+				{% if target %}
+				return crpt.encrypt(msg, ekey).toString();
+				{% else %}
+				return msg;
+				{% endif %}
 			};
 			function dmsg(msg){
+				{% if target %}
 				const bytes = crpt.decrypt(msg, ekey);
 				const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
 				return decryptedData;
-			};
-			/*
-			function pollData() {
-				fetch('/your_api_endpoint/')
-					.then(response => response.json())
-					.then(data => {
-						// Update the DOM with the new data
-						document.getElementById('data-container').innerHTML = data.html;
-					});
-			}
-				{% for chat in ctable %}
-				{% if user == chat.user %}
-				<b>{{chat.user.username}}:</b> {{chat.msg}}<br/>
 				{% else %}
-				{{chat.user.username}}: {{chat.msg}}<br/>
+				return msg;
 				{% endif %}
-				{% endfor %}
+			};
+			const inp = document.querySelector("#inp");
+			const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
-			setInterval(pollData, 5000); // Poll every 5 seconds
-			 */
-						const inp = document.querySelector("#inp");
-						const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-						var inwork = false;
 
-						function pollData(poll=true){
-							if(inwork)
-								return;
-							inwork = true;
-							if(poll)
-								url = "{% url 'pchat' %}{{target}}";
-							else
-								url = "{% url 'gchat' %}{{target}}";
-							console.log("En",url);
-							fetch(url)
-								.then(response => {
-									if (response.ok) {
-										return response.json();
-									} else {
-										throw new Error('Network response was not ok');
-										inwork = false;
-									}
-								})
-								.then(data => {
-									console.log(data);
-									var restr = "";
-									for(var i=0;i<data["user"].length;i++){
-										if(data["root"] == data["user"][i])
-											restr += "<b>"+data["user"][i]+"</b>: "+dmsg(data["mesg"][i])+"<br/>"
-										else
-											restr += data["user"][i]+": "+dmsg(data["mesg"][i])+"<br/>"
-									}
-									const cbox = document.getElementById('cbox');
-									cbox.innerHTML = restr;
-									inwork = false;
-								});
-						}
+			const cbody = {
+				"method"             : "get",
+				"type"               : "chat",
+				"target"             : "{{target}}",
+				"long"	             : "false",
+				"csrfmiddlewaretoken": csrfToken,
+			};
 
-			function req(){
-				data = "csrfmiddlewaretoken="+csrfToken+"&"+
-					"msgtxt="+emsg(inp.value)+"&"+
-					"user="+"{{request.user.username}}"+"&"+
-					"target="+"{{target}}";
-				if(inp.value != "")
-					fetch("{% url 'chat' %}",{
-						"method":"POST",
+			var pbody = Object.assign({},cbody);
+			pbody["method"] = "post";
+			console.log(pbody)
+
+			payload = {
+				"method": "POST",
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'X-CSRFToken': csrfToken,
+				},
+				body: $.param(cbody)
+			};	
+
+			function handleData(rdata){
+				var restr = "";
+				for(var i=0;i<rdata["user"].length;i++){
+					if(rdata["root"] == rdata["user"][i])
+						restr += "<b>"+rdata["user"][i]+"</b>: "+dmsg(rdata["mesg"][i])+"<br/>"
+					else
+						restr += rdata["user"][i]+": "+dmsg(rdata["mesg"][i])+"<br/>"
+				}
+				const cbox = document.getElementById('cbox');
+				cbox.innerHTML = restr;
+			}
+
+			async function getMsg(longPoll=true){
+				if(longPoll)
+					purl = "{% url 'pmsg' %}";
+				else
+					purl = "{% url 'msg' %}";
+				const res = await fetch(purl,payload);
+				if(res.status==200)
+					res.json().then(handleData);
+				else if(res.status==204)
+					console.log("No new data");
+				else
+					console.error(" pmesg error");
+			};
+
+			function postMsg(){
+				let msg = inp.value;
+				if(msg != ""){
+					pbody['msg'] = emsg(msg);
+					postload = {
+						"method": "POST",
 						headers: {
 							'Content-Type': 'application/x-www-form-urlencoded',
 							'X-CSRFToken': csrfToken,
 						},
-						body: data,
-					}).then(pollData);
-				inp.value = "";
+						body: $.param(pbody)
+					};
+					fetch("{% url 'msg' %}",postload);
+					inp.value = "";
+				}
 			};
 
 			inp.onkeyup = function(e)
 			{
 				if(e.key === "Enter"){
-					req();
+					postMsg();
 				}
 			};
 
+			getMsg(false);
 
-			pollData(false);
-			setInterval(pollData,100);
+			let inexec = false;
+			setInterval( () => {
+				if(!inexec){
+					inexec = true;
+					try{
+						getMsg();
+					}catch(error){
+						console.error('Error:', error);
+					}finally{
+						inexec = false;
+					}
+				}
+			},1000);
+
+			//pollData(false);
+			//setInterval(pollData,100);
 		</script>
 	</body>
 </html>

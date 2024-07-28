@@ -26,10 +26,8 @@ urlpatterns = [
     path("dashboard/", views.dashboard,name='dashboard'),
     path("chat/", views.chat,name='chat'),
     path("chat/<str:target>", views.chat,name='chatTarget'),
-    path("gchat/", views.gchat,name='gchat'),
-    path("gchat/<str:target>/", views.gchat,name='gchatTarget'),
-    path("pchat/", views.gchat,name='pchat'),
-    path("pchat/<str:target>/", views.gchat,name='pchatTarget'),
     path("target/", views.target,name='target'),
     path("logout/", views.logout,name='logout'),
+    path("msg/", views.msg,name='msg'),
+    path("pmsg/", views.msg,name='pmsg'),
 ]
